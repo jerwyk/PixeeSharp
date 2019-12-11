@@ -116,37 +116,15 @@ namespace PixeeSharp
     public class PixeeSharpBaseApi
     {
 
+        //Client secrets from PixivPy
         internal string clientID = "MOBrBDS8blbauoSck0ZfDbtuzpyT";
         internal string clientSecret = "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj";
         internal string hashSecret = "28c1fdd170a5204386cb1313c7077b34f83e4aaf4aa829ce78c231e05b0bae2c";
 
-        public Dictionary<string, string> TargetIPs { get; } = new Dictionary<string, string>()
-        {
-            {"oauth.secure.pixiv.net","210.140.131.224" },
-            {"www.pixiv.net","210.140.131.224" },
-            {"app-api.pixiv.net","210.140.131.224" }
-        };
-
-        public Dictionary<string, string> TargetSubjects { get; } = new Dictionary<string, string>()
-        {
-            {"210.140.131.224","CN=*.pixiv.net, O=pixiv Inc., OU=Development department, L=Shibuya-ku, S=Tokyo, C=JP" },
-            {"210.140.92.142","CN=*.pximg.net, OU=Domain Control Validated" }
-        };
-        public Dictionary<string, string> TargetSNs { get; } = new Dictionary<string, string>()
-        {
-            {"210.140.131.224","281941D074A6D4B07B72D729" },
-            {"210.140.92.142","2387DB20E84EFCF82492545C" }
-        };
-        public Dictionary<string, string> TargetTPs { get; } = new Dictionary<string, string>()
-        {
-            {"210.140.131.224","352FCC13B920E12CD15F3875E52AEDB95B62972B" },
-            {"210.140.92.142","F4A431620F42E4D10EB42621C6948E3CD5014FB0" }
-        };
-
+        //Properties
         public string AccessToken { get; internal set; }
         public string RefreshToken { get; internal set; }
         public string UserID { get; internal set; }
-        public bool ExperimentalConnection { get; set; }
 
         private int refreshInterval;
         public int RefreshInterval
@@ -158,27 +136,15 @@ namespace PixeeSharp
                 if (value > 0) refreshTimer.Interval = TimeSpan.FromMinutes(value);
             }
         }
-
+        //Timer for auto regresh login
         DispatcherTimer refreshTimer = new DispatcherTimer();
 
-        //自动刷新登录时执行
+        //Refresh Event
         public event EventHandler<RefreshEventArgs> TokenRefreshed;
-
-        public PixeeSharpBaseApi(string AccessToken, string RefreshToken, string UserID,
-            bool ExperimentalConnection = false, int RefreshInterval = 45)
-        {
-            this.AccessToken = AccessToken;
-            this.RefreshToken = RefreshToken;
-            this.UserID = UserID;
-            this.ExperimentalConnection = ExperimentalConnection;
-            this.RefreshInterval = RefreshInterval;
-            refreshTimer.Interval = TimeSpan.FromMinutes(RefreshInterval);
-            refreshTimer.Tick += RefreshTimer_Tick;
-        }
 
         private async void RefreshTimer_Tick(object sender, object e)
         {
-            //每隔一定的时间刷新登录
+            //Auto login after a certain interval
             try
             {
                 await Auth(RefreshToken).ConfigureAwait(false);
@@ -191,22 +157,40 @@ namespace PixeeSharp
             TokenRefreshed(this, new RefreshEventArgs(AccessToken, RefreshToken, true));
         }
 
+        //Constructors
+        public PixeeSharpBaseApi(string AccessToken, string RefreshToken, string UserID, int RefreshInterval = 45)
+        {
+            this.AccessToken = AccessToken;
+            this.RefreshToken = RefreshToken;
+            this.UserID = UserID;
+            this.RefreshInterval = RefreshInterval;
+            refreshTimer.Interval = TimeSpan.FromMinutes(RefreshInterval);
+            refreshTimer.Tick += RefreshTimer_Tick;
+        }
         public PixeeSharpBaseApi() : this(null, null, null) { }
 
         public PixeeSharpBaseApi(PixeeSharpBaseApi BaseAPI) :
-            this(BaseAPI.AccessToken, BaseAPI.RefreshToken, BaseAPI.UserID, BaseAPI.ExperimentalConnection, BaseAPI.RefreshInterval)
+            this(BaseAPI.AccessToken, BaseAPI.RefreshToken, BaseAPI.UserID, BaseAPI.RefreshInterval)
         { }
+        //-------------------------------------------------------
 
-        internal async Task<IRestResponse> RequestCall(RestSharp.Method Method, string Url,
+        /// <summary>
+        /// Make a request to the specified url
+        /// </summary>
+        /// <param name="Method">The HTTP method to use</param>
+        /// <param name="Url">The request url</param>
+        /// <param name="Headers">The request headers</param>
+        /// <param name="Query">The request query parameters</param>
+        /// <param name="Body">The request body content</param>
+        /// <returns>The response of the request</returns>
+        internal async Task<IRestResponse> RequestCall(RestSharp.Method Method, Uri Url,
             PixivRequestHeader Headers = null, PixivRequestContent Query = null,
             PixivRequestContent Body = null)
         {
             try
             {
 
-                string queryUrl = Url;// + Query?.GetQueryString();
-
-                RestClient _client = new RestClient(queryUrl);
+                RestClient _client = new RestClient(Url);
                 RestRequest _request = new RestRequest(Method);
                 Headers?.AddHeaders(ref _request);
                 Body?.AddContent(ref _request);
@@ -225,7 +209,16 @@ namespace PixeeSharp
 
         }
 
-        internal async Task<string> GetStringRequest(RestSharp.Method Method, string Url,
+        /// <summary>
+        /// Excecute the request and returns the response string
+        /// </summary>
+        /// <param name="Method">The HTTP method to use</param>
+        /// <param name="Url">The request url</param>
+        /// <param name="Headers">The request headers</param>
+        /// <param name="Query">The request query parameters</param>
+        /// <param name="Body">The request body content</param>
+        /// <returns>The response content of the request as a string</returns>
+        internal async Task<string> GetStringRequest(RestSharp.Method Method, Uri Url,
            PixivRequestHeader Headers = null, PixivRequestContent Query = null,
            PixivRequestContent Body = null)
         {
@@ -236,7 +229,16 @@ namespace PixeeSharp
             return res.Content;
         }
 
-        internal async Task<Stream> GetStreamRequest(RestSharp.Method Method, string Url,
+        /// <summary>
+        /// Excecute the request and returns the content as stream
+        /// </summary>
+        /// <param name="Method">The HTTP method to use</param>
+        /// <param name="Url">The request url</param>
+        /// <param name="Headers">The request headers</param>
+        /// <param name="Query">The request query parameters</param>
+        /// <param name="Body">The request body content</param>
+        /// <returns>The response content of the request as a stream</returns>
+        internal async Task<Stream> GetStreamRequest(RestSharp.Method Method, Uri Url,
            PixivRequestHeader Headers = null, PixivRequestContent Query = null,
            PixivRequestContent Body = null)
         {
@@ -246,6 +248,11 @@ namespace PixeeSharp
             return ms;
         }
 
+        /// <summary>
+        /// Login to Pixiv with a username and password
+        /// </summary>
+        /// <param name="Username">The username of the account</param>
+        /// <param name="Password">The password of the account</param>
         public async Task Auth(string Username, string Password)
         {
             string MD5Hash(string Input)
@@ -260,7 +267,7 @@ namespace PixeeSharp
                     return builder.ToString();
                 }
             }
-            string url = "https://oauth.secure.pixiv.net/auth/token";
+            Uri url = new Uri("https://oauth.secure.pixiv.net/auth/token");
             string time = DateTime.UtcNow.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss") + "+00:00";
 
             PixivRequestHeader header = new PixivRequestHeader(
@@ -289,9 +296,12 @@ namespace PixeeSharp
 
         }
 
+        /// <summary>
+        /// Login to Pixiv using a refresh token
+        /// </summary>
         public async Task Auth(string RefreshToken)
         {
-            string url = "https://oauth.secure.pixiv.net/auth/token";
+            Uri url = new Uri("https://oauth.secure.pixiv.net/auth/token");
             PixivRequestHeader header = new PixivRequestHeader();
             header.Add("User-Agent", "PixivAndroidApp/5.0.64 (Android 6.0)");
 
@@ -315,7 +325,12 @@ namespace PixeeSharp
 
         }
 
-        public async Task<Stream> DownloadImage(string url)
+        /// <summary>
+        /// Download the image as stream from the Pixiv image server
+        /// </summary>
+        /// <param name="url">The url of the image</param>
+        /// <returns>The image stream</returns>
+        public async Task<Stream> DownloadImage(Uri url)
         {
             string referer = @"https://app-api.pixiv.net/";
             PixivRequestHeader header = new PixivRequestHeader();
@@ -323,6 +338,11 @@ namespace PixeeSharp
 
             return await GetStreamRequest(Method.GET, url, header).ConfigureAwait(false);
 
+        }
+
+        public async Task<Stream> DownloadImage(string url)
+        {
+            return await DownloadImage(new Uri(url)).ConfigureAwait(false);
         }
 
     }
