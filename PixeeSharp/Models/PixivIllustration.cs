@@ -60,5 +60,16 @@ namespace PixeeSharp.Models
             });
         }
 
+        public static List<PixivIllustration> GetIllustraiionListFromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<List<PixivIllustration>>(json, new JsonSerializerSettings()
+            {
+                ContractResolver = new DefaultContractResolver()
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                }
+            });
+        }
+
     }
 }
