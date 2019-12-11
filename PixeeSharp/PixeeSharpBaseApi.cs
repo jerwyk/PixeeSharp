@@ -47,6 +47,11 @@ namespace PixeeSharp
             }
         }
 
+        public bool ContainsKey(string key)
+        {
+            return _headers.ContainsKey(key);
+        }
+
     }
 
     internal class PixivRequestContent
@@ -177,24 +182,24 @@ namespace PixeeSharp
         /// <summary>
         /// Make a request to the specified url
         /// </summary>
-        /// <param name="Method">The HTTP method to use</param>
-        /// <param name="Url">The request url</param>
-        /// <param name="Headers">The request headers</param>
-        /// <param name="Query">The request query parameters</param>
-        /// <param name="Body">The request body content</param>
+        /// <param name="method">The HTTP method to use</param>
+        /// <param name="url">The request url</param>
+        /// <param name="headers">The request headers</param>
+        /// <param name="query">The request query parameters</param>
+        /// <param name="body">The request body content</param>
         /// <returns>The response of the request</returns>
-        internal async Task<IRestResponse> RequestCall(RestSharp.Method Method, Uri Url,
-            PixivRequestHeader Headers = null, PixivRequestContent Query = null,
-            PixivRequestContent Body = null)
+        internal async Task<IRestResponse> RequestCall(RestSharp.Method method, Uri url,
+            PixivRequestHeader headers = null, PixivRequestContent query = null,
+            PixivRequestContent body = null)
         {
             try
             {
 
-                RestClient _client = new RestClient(Url);
-                RestRequest _request = new RestRequest(Method);
-                Headers?.AddHeaders(ref _request);
-                Body?.AddContent(ref _request);
-                Query?.AddQuery(ref _request);
+                RestClient _client = new RestClient(url);
+                RestRequest _request = new RestRequest(method);
+                headers?.AddHeaders(ref _request);
+                body?.AddContent(ref _request);
+                query?.AddQuery(ref _request);
 
                 var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
                 _client.ExecuteAsync(_request, (response) => taskCompletionSource.SetResult(response));
