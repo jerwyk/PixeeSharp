@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -13,17 +13,21 @@ using System.Security.Cryptography;
 using Newtonsoft.Json;
 using System.Windows.Threading;
 using RestSharp;
+using Newtonsoft.Json.Linq;
 
 namespace PixeeSharp
 {
 
-    public class PixivRequestHeader
+    internal class PixivRequestHeader
     {
         private Dictionary<string, string> _headers = new Dictionary<string, string>();
 
         public void Add(string key, string value)
         {
-            _headers.Add(key, value);
+            if (!(string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value)))
+            {
+                _headers.Add(key, value);
+            }
         }
 
         public PixivRequestHeader(params (string key, string value)[] header)
@@ -45,30 +49,54 @@ namespace PixeeSharp
 
     }
 
-    public class PixivRequestBody
+    internal class PixivRequestContent
     {
-        private Dictionary<string, string> _body = new Dictionary<string, string>();
+        private Dictionary<string, string> _content = new Dictionary<string, string>();
+
+        public PixivRequestContent(params (string key, string value)[] param)
+        {
+            _content = param.ToDictionary(h => h.key, h => h.value);
+        }
 
         public void Add(string key, string value)
         {
-            _body.Add(key, value);
+            if (!(string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value)))
+            {
+                _content.Add(key, value);
+            }
         }
 
         /// <summary>
-        /// Add the headers to the client
+        /// Add the content to the client
         /// </summary>
         /// <param name="request"></param>
-        public void AddParameter(ref RestRequest request)
+        public void AddContent(ref RestRequest request)
         {
-            request?.AddJsonBody(_body);
+            foreach (var c in _content)
+            {
+                request?.AddParameter(c.Key, c.Value);
+            }
+        }
+
+        public void AddQuery(ref RestRequest request)
+        {
+            foreach (var c in _content)
+            {
+                request?.AddQueryParameter(c.Key, c.Value);
+            }
         }
 
     }
 
+    [Serializable]
     public class PixivException : Exception
     {
         public PixivException() { }
         public PixivException(string msg) : base(msg) { }
+
+        public PixivException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 
     public class RefreshEventArgs : EventArgs
@@ -92,24 +120,24 @@ namespace PixeeSharp
         internal string clientSecret = "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj";
         internal string hashSecret = "28c1fdd170a5204386cb1313c7077b34f83e4aaf4aa829ce78c231e05b0bae2c";
 
-        public Dictionary<string, string> TargetIPs { get; set; } = new Dictionary<string, string>()
+        public Dictionary<string, string> TargetIPs { get; } = new Dictionary<string, string>()
         {
             {"oauth.secure.pixiv.net","210.140.131.224" },
             {"www.pixiv.net","210.140.131.224" },
             {"app-api.pixiv.net","210.140.131.224" }
         };
 
-        public Dictionary<string, string> TargetSubjects { get; set; } = new Dictionary<string, string>()
+        public Dictionary<string, string> TargetSubjects { get; } = new Dictionary<string, string>()
         {
             {"210.140.131.224","CN=*.pixiv.net, O=pixiv Inc., OU=Development department, L=Shibuya-ku, S=Tokyo, C=JP" },
             {"210.140.92.142","CN=*.pximg.net, OU=Domain Control Validated" }
         };
-        public Dictionary<string, string> TargetSNs { get; set; } = new Dictionary<string, string>()
+        public Dictionary<string, string> TargetSNs { get; } = new Dictionary<string, string>()
         {
             {"210.140.131.224","281941D074A6D4B07B72D729" },
             {"210.140.92.142","2387DB20E84EFCF82492545C" }
         };
-        public Dictionary<string, string> TargetTPs { get; set; } = new Dictionary<string, string>()
+        public Dictionary<string, string> TargetTPs { get; } = new Dictionary<string, string>()
         {
             {"210.140.131.224","352FCC13B920E12CD15F3875E52AEDB95B62972B" },
             {"210.140.92.142","F4A431620F42E4D10EB42621C6948E3CD5014FB0" }
@@ -153,7 +181,7 @@ namespace PixeeSharp
             //每隔一定的时间刷新登录
             try
             {
-                _ = await Auth(RefreshToken);
+                await Auth(RefreshToken).ConfigureAwait(false);
             }
             catch
             {
@@ -169,19 +197,20 @@ namespace PixeeSharp
             this(BaseAPI.AccessToken, BaseAPI.RefreshToken, BaseAPI.UserID, BaseAPI.ExperimentalConnection, BaseAPI.RefreshInterval)
         { }
 
-        public async Task<IRestResponse> RequestCall(RestSharp.Method Method, string Url,
-            PixivRequestHeader Headers = null, PixivRequestParameter Query = null,
-            HttpContent Body = null)
+        internal async Task<IRestResponse> RequestCall(RestSharp.Method Method, string Url,
+            PixivRequestHeader Headers = null, PixivRequestContent Query = null,
+            PixivRequestContent Body = null)
         {
             try
             {
 
-                string queryUrl = Url + Query?.GetQueryString();
+                string queryUrl = Url;// + Query?.GetQueryString();
 
-                RestClient _client = new RestClient();
-                RestRequest _request = new RestRequest(queryUrl, Method);
+                RestClient _client = new RestClient(queryUrl);
+                RestRequest _request = new RestRequest(Method);
                 Headers?.AddHeaders(ref _request);
-                Query?.AddParameter(ref _request);
+                Body?.AddContent(ref _request);
+                Query?.AddQuery(ref _request);
 
                 var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
                 _client.ExecuteAsync(_request, (response) => taskCompletionSource.SetResult(response));
@@ -189,14 +218,35 @@ namespace PixeeSharp
                 return await taskCompletionSource.Task.ConfigureAwait(false);
 
             }
-            catch 
+            catch
             {
                 throw new PixivException("Request failed");
             }
 
         }
 
-        public async Task<JsonObject> Auth(string Username, string Password)
+        internal async Task<string> GetStringRequest(RestSharp.Method Method, string Url,
+           PixivRequestHeader Headers = null, PixivRequestContent Query = null,
+           PixivRequestContent Body = null)
+        {
+            IRestResponse res = await RequestCall(Method, Url, Headers, Query, Body).ConfigureAwait(false);
+            var status = res.StatusCode;
+            if (!(status == HttpStatusCode.OK || status == HttpStatusCode.Moved || status == HttpStatusCode.Found))
+                throw new PixivException("[ERROR] RequestCall() failed!");
+            return res.Content;
+        }
+
+        internal async Task<Stream> GetStreamRequest(RestSharp.Method Method, string Url,
+           PixivRequestHeader Headers = null, PixivRequestContent Query = null,
+           PixivRequestContent Body = null)
+        {
+            IRestResponse res = await RequestCall(Method, Url, Headers, Query, Body).ConfigureAwait(false);
+            MemoryStream ms = new MemoryStream();
+            await ms.WriteAsync(res.RawBytes, 0, (int)res.ContentLength).ConfigureAwait(false);
+            return ms;
+        }
+
+        public async Task Auth(string Username, string Password)
         {
             string MD5Hash(string Input)
             {
@@ -217,9 +267,61 @@ namespace PixeeSharp
                 ("User-Agent", "PixivAndroidApp/5.0.64 (Android 6.0)"),
                 ("X-Client-Time", time),
                 ("X-Client-Hash", MD5Hash(time + hashSecret))
-                );
+            );
 
+            PixivRequestContent content = new PixivRequestContent(
+                ("get_secure_url", "1"),
+                ("client_id", clientID),
+                ("client_secret", clientSecret),
+                ("grant_type", "password"),
+                ("username", Username),
+                ("password", Password)
+            );
 
+            dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, Body: content).ConfigureAwait(false));
+            AccessToken = resContent.response.access_token;
+            UserID = resContent.response.user.id;
+            RefreshToken = resContent.response.refresh_token;
+            if (RefreshInterval > 0)
+            {
+                refreshTimer.Start();
+            }
+
+        }
+
+        public async Task Auth(string RefreshToken)
+        {
+            string url = "https://oauth.secure.pixiv.net/auth/token";
+            PixivRequestHeader header = new PixivRequestHeader();
+            header.Add("User-Agent", "PixivAndroidApp/5.0.64 (Android 6.0)");
+
+            PixivRequestContent content = new PixivRequestContent
+            (
+                ("get_secure_url", "1"),
+                ("client_id", clientID),
+                ("client_secret", clientSecret),
+                ("grant_type", "refresh_token"),
+                ("refresh_token", RefreshToken)
+            );
+
+            dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, Body: content).ConfigureAwait(false));
+            AccessToken = resContent.response.access_token;
+            UserID = resContent.response.user.id;
+            this.RefreshToken = resContent.response.refresh_token;
+            if (RefreshInterval > 0)
+            {
+                refreshTimer.Start();
+            }
+
+        }
+
+        public async Task<Stream> DownloadImage(string url)
+        {
+            string referer = @"https://app-api.pixiv.net/";
+            PixivRequestHeader header = new PixivRequestHeader();
+            header.Add("Referer", referer);
+
+            return await GetStreamRequest(Method.GET, url, header).ConfigureAwait(false);
 
         }
 
