@@ -26,13 +26,18 @@ namespace PixeeSharp
             _headers.Add(key, value);
         }
 
+        public PixivRequestHeader(params (string key, string value)[] header)
+        {
+            _headers = header.ToDictionary(h => h.key, h => h.value);
+        }
+
         /// <summary>
         /// Add the headers to the client
         /// </summary>
         /// <param name="request"></param>
         public void AddHeaders(ref RestRequest request)
         {
-            foreach(var header in _headers)
+            foreach (var header in _headers)
             {
                 request?.AddHeader(header.Key, header.Value);
             }
@@ -40,13 +45,13 @@ namespace PixeeSharp
 
     }
 
-    public class PixivRequestParameter
+    public class PixivRequestBody
     {
-        private List<(string key, string value)> _parameters = new List<(string, string)>();
+        private Dictionary<string, string> _body = new Dictionary<string, string>();
 
         public void Add(string key, string value)
         {
-            _parameters.Add((key, value));
+            _body.Add(key, value);
         }
 
         /// <summary>
@@ -55,19 +60,7 @@ namespace PixeeSharp
         /// <param name="request"></param>
         public void AddParameter(ref RestRequest request)
         {
-            foreach (var header in _parameters)
-            {
-                request?.AddQueryParameter(header.key, header.value);
-            }
-        }
-
-        public string GetQueryString()
-        {
-            var array = (from i in _parameters
-                         select string.Format("{0}={1}", HttpUtility.UrlEncode(i.key),
-                         HttpUtility.UrlEncode(i.value)))
-                .ToArray();
-            return "?" + string.Join("&", array);
+            request?.AddJsonBody(_body);
         }
 
     }
@@ -186,9 +179,9 @@ namespace PixeeSharp
                 string queryUrl = Url + Query?.GetQueryString();
 
                 RestClient _client = new RestClient();
-                RestRequest _request = new RestRequest(queryUrl);
-                Headers.AddHeaders(ref _request);
-                Query.AddParameter(ref _request);
+                RestRequest _request = new RestRequest(queryUrl, Method);
+                Headers?.AddHeaders(ref _request);
+                Query?.AddParameter(ref _request);
 
                 var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
                 _client.ExecuteAsync(_request, (response) => taskCompletionSource.SetResult(response));
@@ -196,7 +189,37 @@ namespace PixeeSharp
                 return await taskCompletionSource.Task.ConfigureAwait(false);
 
             }
-            catch { }         
+            catch 
+            {
+                throw new PixivException("Request failed");
+            }
+
+        }
+
+        public async Task<JsonObject> Auth(string Username, string Password)
+        {
+            string MD5Hash(string Input)
+            {
+                if (string.IsNullOrEmpty(Input)) return null;
+                using (var md5 = MD5.Create())
+                {
+                    var bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(Input.Trim()));
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 0; i < bytes.Length; i++)
+                        builder.Append(bytes[i].ToString("x2"));
+                    return builder.ToString();
+                }
+            }
+            string url = "https://oauth.secure.pixiv.net/auth/token";
+            string time = DateTime.UtcNow.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss") + "+00:00";
+
+            PixivRequestHeader header = new PixivRequestHeader(
+                ("User-Agent", "PixivAndroidApp/5.0.64 (Android 6.0)"),
+                ("X-Client-Time", time),
+                ("X-Client-Hash", MD5Hash(time + hashSecret))
+                );
+
+
 
         }
 
