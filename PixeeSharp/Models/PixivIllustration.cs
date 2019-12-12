@@ -1,7 +1,9 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using PixeeSharp.Enums;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +17,24 @@ namespace PixeeSharp.Models
         public string Medium { get; set; }
         public string SquareMedium { get; set; }
         public string Original { get; set; }
+
+        public Uri GetUrl(ImageSize size)
+        {
+            switch (size)
+            {
+                case ImageSize.Large:
+                    return new Uri(Large);
+                case ImageSize.Medium:
+                    return new Uri(Medium);
+                case ImageSize.SquareMedium:
+                    return new Uri(SquareMedium);
+                case ImageSize.Original:
+                    return new Uri(Original);
+                default:
+                    return null;
+            }
+        }
+
     }
 
     public struct Tag
@@ -49,6 +69,8 @@ namespace PixeeSharp.Models
         public int Width { get; set; }
         public int XRestrict { get; set; }
 
+        public PixeeSharpBaseApi Client { get; set; }
+
         public static PixivIllustration GetIllustrationFromJson(string json)
         {
             return JsonConvert.DeserializeObject<PixivIllustration>(json, new JsonSerializerSettings()
@@ -60,15 +82,16 @@ namespace PixeeSharp.Models
             });
         }
 
-        public static List<PixivIllustration> GetIllustraiionListFromJson(string json)
+        public async Task<Stream> GetImage(ImageSize size = ImageSize.Original, int Index = 0)
         {
-            return JsonConvert.DeserializeObject<List<PixivIllustration>>(json, new JsonSerializerSettings()
+            if (Client != null)
             {
-                ContractResolver = new DefaultContractResolver()
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                }
-            });
+                return await Client.DownloadImage(ImageUrls.GetUrl(size)).ConfigureAwait(false);
+            }
+            else
+            {
+                return null;
+            }
         }
 
     }

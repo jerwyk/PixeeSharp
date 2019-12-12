@@ -56,6 +56,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\Enums.cs" />
+    <Compile Include="Models\PixivIllustration.cs" />
+    <Compile Include="Models\PixivSearchResult.cs" />
+    <Compile Include="Models\PixivUser.cs" />
+    <Compile Include="PixeeSharpAppApi.cs" />
     <Compile Include="PixeeSharpBaseApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

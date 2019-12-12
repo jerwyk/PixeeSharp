@@ -53,17 +53,10 @@ namespace PixeeSharp
             return PixivIllustration.GetIllustrationFromJson(resJson);
         }
 
-        public async Task<List<PixivIllustration>> SearchIllust(string word, string searchTarget = "partial_match_for_tags",
+        public async Task<PixivSearchResult> SearchIllust(string word, string searchTarget = "partial_match_for_tags",
             string sort = "date_desc", string duration = null, string filter = "for_ios", string offset = null,
-            Uri url = null, bool requireAuth = true)
+            bool requireAuth = true)
         {
-            if(url != null)
-            {
-                var resJson = await GetStringRequest(Method.GET, url, requireAuth: requireAuth).ConfigureAwait(false);
-                return PixivIllustration.GetIllustraiionListFromJson(resJson);
-            }
-            else
-            {
                 Uri baseUrl = new Uri("https://app-api.pixiv.net/v1/search/illust");
                 PixivRequestContent query = new PixivRequestContent
                 (
@@ -75,8 +68,7 @@ namespace PixeeSharp
                 if (!string.IsNullOrEmpty(duration)) query.Add("duration", duration);
                 if (!string.IsNullOrEmpty(offset)) query.Add("offset", offset);
                 var resJson = await GetStringRequest(Method.GET, baseUrl, query: query, requireAuth: requireAuth).ConfigureAwait(false);
-                return PixivIllustration.GetIllustraiionListFromJson(resJson);
-            }
+                return PixivSearchResult.GetResultFromJson(resJson, this);
         }
 
     }

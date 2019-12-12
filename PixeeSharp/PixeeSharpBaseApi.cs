@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Windows.Threading;
 using RestSharp;
 using Newtonsoft.Json.Linq;
+using PixeeSharp.Models;
 
 namespace PixeeSharp
 {
@@ -175,7 +176,7 @@ namespace PixeeSharp
         public PixeeSharpBaseApi() : this(null, null, null) { }
 
         public PixeeSharpBaseApi(PixeeSharpBaseApi BaseAPI) :
-            this(BaseAPI.AccessToken, BaseAPI.RefreshToken, BaseAPI.UserID, BaseAPI.RefreshInterval)
+            this(BaseAPI?.AccessToken, BaseAPI?.RefreshToken, BaseAPI?.UserID, BaseAPI.RefreshInterval)
         { }
         //-------------------------------------------------------
 
@@ -328,6 +329,11 @@ namespace PixeeSharp
                 refreshTimer.Start();
             }
 
+        }
+
+        public async Task<string> GetUriResult(Uri url)
+        {
+            return await GetStringRequest(Method.GET, url).ConfigureAwait(false);
         }
 
         /// <summary>
