@@ -39,9 +39,14 @@ namespace PixeeSharp
 
         }
 
-        public async Task GetUserDetial()
+        public async Task<PixivUserProfile> GetUserDetail(string userId, string filter = "for_ios", bool requireAuth = true)
         {
-
+            Uri url = new Uri("https://app-api.pixiv.net/v1/user/detail");
+            PixivRequestContent _query = new PixivRequestContent();
+            _query.Add("user_id", userId);
+            _query.Add("filter", filter);
+            string resJson = await GetStringRequest(Method.GET, url, query: _query, requireAuth: requireAuth).ConfigureAwait(false);
+            return PixivUserProfile.GetUserProfileFromJson(resJson, this);
         }
 
         public async Task<PixivIllustration> GetIllustrationDetail(string id, bool requireAuth = true)
@@ -53,7 +58,7 @@ namespace PixeeSharp
             return PixivIllustration.GetIllustrationFromJson(resJson);
         }
 
-        public async Task<PixivSearchResult> SearchIllust(string word, string searchTarget = "partial_match_for_tags",
+        public async Task<PixivSearchResult> SearchIllustration(string word, string searchTarget = "partial_match_for_tags",
             string sort = "date_desc", string duration = null, string filter = "for_ios", string offset = null,
             bool requireAuth = true)
         {

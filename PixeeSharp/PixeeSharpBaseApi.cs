@@ -224,11 +224,11 @@ namespace PixeeSharp
         /// <param name="Query">The request query parameters</param>
         /// <param name="Body">The request body content</param>
         /// <returns>The response content of the request as a string</returns>
-        internal async Task<string> GetStringRequest(RestSharp.Method Method, Uri Url,
-           PixivRequestHeader Headers = null, PixivRequestContent Query = null,
-           PixivRequestContent Body = null)
+        internal async Task<string> GetStreamRequest(RestSharp.Method method, Uri url,
+           PixivRequestHeader headers = null, PixivRequestContent query = null,
+           PixivRequestContent body = null)
         {
-            IRestResponse res = await RequestCall(Method, Url, Headers, Query, Body).ConfigureAwait(false);
+            IRestResponse res = await RequestCall(method, url, headers, query, body).ConfigureAwait(false);
             var status = res.StatusCode;
             if (!(status == HttpStatusCode.OK || status == HttpStatusCode.Moved || status == HttpStatusCode.Found))
                 throw new PixivException("[ERROR] RequestCall() failed!");
@@ -238,17 +238,17 @@ namespace PixeeSharp
         /// <summary>
         /// Excecute the request and returns the content as stream
         /// </summary>
-        /// <param name="Method">The HTTP method to use</param>
-        /// <param name="Url">The request url</param>
-        /// <param name="Headers">The request headers</param>
-        /// <param name="Query">The request query parameters</param>
-        /// <param name="Body">The request body content</param>
+        /// <param name="method">The HTTP method to use</param>
+        /// <param name="url">The request url</param>
+        /// <param name="headers">The request headers</param>
+        /// <param name="query">The request query parameters</param>
+        /// <param name="body">The request body content</param>
         /// <returns>The response content of the request as a stream</returns>
-        internal async Task<Stream> GetStreamRequest(RestSharp.Method Method, Uri Url,
-           PixivRequestHeader Headers = null, PixivRequestContent Query = null,
-           PixivRequestContent Body = null)
+        internal async Task<Stream> GetStreamRequest(RestSharp.Method method, Uri url,
+           PixivRequestHeader headers = null, PixivRequestContent query = null,
+           PixivRequestContent body = null)
         {
-            IRestResponse res = await RequestCall(Method, Url, Headers, Query, Body).ConfigureAwait(false);
+            IRestResponse res = await RequestCall(method, url, headers, query, body).ConfigureAwait(false);
             MemoryStream ms = new MemoryStream();
             await ms.WriteAsync(res.RawBytes, 0, (int)res.ContentLength).ConfigureAwait(false);
             return ms;
@@ -257,9 +257,9 @@ namespace PixeeSharp
         /// <summary>
         /// Login to Pixiv with a username and password
         /// </summary>
-        /// <param name="Username">The username of the account</param>
-        /// <param name="Password">The password of the account</param>
-        public async Task Auth(string Username, string Password)
+        /// <param name="username">The username of the account</param>
+        /// <param name="password">The password of the account</param>
+        public async Task Login(string username, string password)
         {
             string MD5Hash(string Input)
             {
@@ -287,8 +287,8 @@ namespace PixeeSharp
                 ("client_id", clientID),
                 ("client_secret", clientSecret),
                 ("grant_type", "password"),
-                ("username", Username),
-                ("password", Password)
+                ("username", username),
+                ("password", password)
             );
 
             dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, Body: content).ConfigureAwait(false));
@@ -305,7 +305,7 @@ namespace PixeeSharp
         /// <summary>
         /// Login to Pixiv using a refresh token
         /// </summary>
-        public async Task Auth(string RefreshToken)
+        public async Task Auth(string refreshToken)
         {
             Uri url = new Uri("https://oauth.secure.pixiv.net/auth/token");
             PixivRequestHeader header = new PixivRequestHeader();
@@ -317,7 +317,7 @@ namespace PixeeSharp
                 ("client_id", clientID),
                 ("client_secret", clientSecret),
                 ("grant_type", "refresh_token"),
-                ("refresh_token", RefreshToken)
+                ("refresh_token", refreshToken)
             );
 
             dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, Body: content).ConfigureAwait(false));

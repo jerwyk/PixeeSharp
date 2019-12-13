@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace TestConsole
 {
@@ -13,16 +14,16 @@ namespace TestConsole
         {
 
             MainAsync().GetAwaiter().GetResult();
-
+            
         }
 
         static async Task MainAsync()
         {
             PixeeSharpAppApi api = new PixeeSharpAppApi();
-            await api.Auth("jerwyk@126.com", "Jerwyk0526");
+            await api.Login("jerwyk@126.com", "Jerwyk0526");
 
-            var a = await api.SearchIllust("touhou");
-            await a.Illustrations[0].GetImage();
+            var a = await api.GetUserDetail("6634175");
+            //await a.Illustrations[0].GetImage();
         }
 
     }
