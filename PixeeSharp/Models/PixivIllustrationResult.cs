@@ -8,28 +8,19 @@ using System.Threading.Tasks;
 
 namespace PixeeSharp.Models
 {
-    public class PixivSearchResult
+    public class PixivIllustrationResult : PixivBaseModel
     {
         [JsonProperty("illusts")]
         public List<PixivIllustration> Illustrations { get; set; }
         public string NextUrl { get; set; }
         public int SearchSpanLimit { get; set; }
 
-        public PixeeSharpBaseApi Client { get; set; }
-
-        public static PixivSearchResult GetResultFromJson(string json, PixeeSharpBaseApi client = null)
+        public static PixivIllustrationResult Parse(string json, PixeeSharpBaseApi client = null)
         {
-            var result = JsonConvert.DeserializeObject<PixivSearchResult>(json, new JsonSerializerSettings()
-            {
-                ContractResolver = new DefaultContractResolver()
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                }
-            });
+            var result = Parse<PixivIllustrationResult>(json, client);
 
             if (client != null)
             {
-                result.Client = client;
                 foreach (var illust in result.Illustrations)
                 {
                     illust.Client = client;
@@ -57,9 +48,9 @@ namespace PixeeSharp.Models
         /// Get the next page of illustrations and returns it
         /// </summary>
         /// <returns>The search result</returns>
-        public async Task<PixivSearchResult> ReturnNextResult()
+        public async Task<PixivIllustrationResult> ReturnNextResult()
         {
-            return PixivSearchResult.GetResultFromJson(await Client.GetUriResult(new Uri(NextUrl)).ConfigureAwait(false), this.Client);
+            return PixivIllustrationResult.Parse(await Client.GetUriResult(new Uri(NextUrl)).ConfigureAwait(false), this.Client);
         }
 
         /// <summary>

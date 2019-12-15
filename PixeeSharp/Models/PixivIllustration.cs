@@ -37,13 +37,85 @@ namespace PixeeSharp.Models
 
     }
 
-    public struct Tag
+    /// <summary>
+    /// This wrapper is needed for the meta_pages property
+    /// </summary>
+    public class ImageSizeUrlWrapper
     {
-        public string Name { get; set; }
-        public string TranslatedName { get; set; }
+        [JsonProperty("image_urls")]
+        private ImageSizeUrl _ImageSizeUrl { get; set; }
+        public string Large { get => _ImageSizeUrl.Large; set => _ImageSizeUrl.Large = value; }
+        public string Medium { get => _ImageSizeUrl.Medium; set => _ImageSizeUrl.Medium = value; }
+        public string SquareMedium { get => _ImageSizeUrl.SquareMedium; set => _ImageSizeUrl.SquareMedium = value; }
+        public string Original { get => _ImageSizeUrl.Original; set => _ImageSizeUrl.Original = value; }
+        public Uri GetUrl(ImageSize size)
+        {
+            return _ImageSizeUrl.GetUrl(size);
+        }
     }
 
-    public class PixivIllustration
+    //Needed because of the weired way pixiv formats its data
+    public class MetaImageUrl
+    {
+        [JsonProperty("original_image_url")]
+        public string Url { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a illustration tag
+    /// </summary>
+    public class Tag : IEquatable<Tag>
+    {
+        public string Name { get; set; }
+        [JsonProperty("translated_name")]
+        public string TranslatedName { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Tag t)
+            {
+                return Name == t.Name;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode() => base.GetHashCode();
+
+        public static bool operator ==(Tag left, Tag right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Tag left, Tag right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(Tag other)
+        {
+            return Name == other.Name;
+        }
+    }
+
+    public class PixivSeries
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+    }
+
+    /// <summary>
+    /// This wrapper class is need for the GetIllustration method
+    /// </summary>
+    internal class PixivIllustrationWrapper : PixivBaseModel
+    {
+        [JsonProperty("illust")]
+        public PixivIllustration PixivIllustration { get; set; }
+    }
+
+    public class PixivIllustration : PixivBaseModel
     {
 
         public string Caption { get; set; }
@@ -53,12 +125,13 @@ namespace PixeeSharp.Models
         public ImageSizeUrl ImageUrls { get; set; }
         public bool IsBookmarked { get; set; }
         public bool IsMuted { get; set; }
-        public List<ImageSizeUrl> MetaPages { get; set; }
+        public MetaImageUrl MetaSinglePage { get; set; }
+        public List<ImageSizeUrlWrapper> MetaPages { get; set; }
         public int PageCount { get; set; }
         public int Restrict { get; set; }
         public int SanityLevel { get; set; }
-        public Dictionary<long, string> Series { get; set; }
-        public List<Tag> Tags { get; }
+        public PixivSeries Series { get; set; }
+        public List<Tag> Tags { get; set; }
         public string Title { get; set; }
         //Tools property
         public int TotalBookmarks { get; set; }
@@ -69,24 +142,41 @@ namespace PixeeSharp.Models
         public int Width { get; set; }
         public int XRestrict { get; set; }
 
-        public PixeeSharpBaseApi Client { get; set; }
-
-        public static PixivIllustration GetIllustrationFromJson(string json)
+        /// <summary>
+        /// Generates a instance of the class from a json string
+        /// </summary>
+        /// <param name="json">The json string to be deserialized</param>
+        /// <param name="client">The client that gets the json</param>
+        /// <param name="useWrapper">A wrapper is sometimes required for some apis</param>
+        /// <returns>The illustration generated from the json</returns>
+        public static PixivIllustration Parse(string json, PixeeSharpBaseApi client = null, bool useWrapper = false)
         {
-            return JsonConvert.DeserializeObject<PixivIllustration>(json, new JsonSerializerSettings()
+            if (!useWrapper)
             {
-                ContractResolver = new DefaultContractResolver()
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                }
-            });
+                return Parse<PixivIllustration>(json, client);
+            }
+            else
+            {
+                return Parse<PixivIllustrationWrapper>(json, client).PixivIllustration;
+            }
         }
 
-        public async Task<Stream> GetImage(ImageSize size = ImageSize.Original, int Index = 0)
+        public async Task<Stream> GetImage(ImageSize size = ImageSize.Original, int index = 0)
         {
             if (Client != null)
             {
-                return await Client.DownloadImage(ImageUrls.GetUrl(size)).ConfigureAwait(false);
+                Uri imgUrl;
+                if (MetaPages.Count == 0)//if illust has only one image
+                {
+                    imgUrl = size == ImageSize.Original ? new Uri(MetaSinglePage.Url) : ImageUrls.GetUrl(size);
+                }
+                else//if contains multiple images
+                {
+                    imgUrl = MetaPages[index].GetUrl(size);                   
+                }
+
+                return await Client.DownloadImage(imgUrl).ConfigureAwait(false);
+
             }
             else
             {
