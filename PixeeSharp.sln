@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PixeeSharp", "PixeeSharp\PixeeSharp.csproj", "{D916FCEB-19B2-46B1-BE57-20A782A544D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{F0A264B7-F8D5-4E5D-BCF3-A71C99A8F7E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D916FCEB-19B2-46B1-BE57-20A782A544D0} = {D916FCEB-19B2-46B1-BE57-20A782A544D0}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

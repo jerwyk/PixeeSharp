@@ -175,7 +175,61 @@ namespace PixeeSharp
             return PixivRecommentIllustrationResult.Parse(resJson, this);
         }
 
+        public async Task<PixivBookmarkTagResult> GetUserBookmarkTagsIllust(string id, string restrict = "public", int offset = -1, bool requireAuth = true)
+        {
+            Uri url = new Uri(baseUrl + "/v1/user/bookmark-tags/illust");
+            PixivRequestContent query = new PixivRequestContent
+            (
+                ("restrict", restrict),
+                ("user_id", id)
+            );
+            if (offset >= 0) query.Add("offset", offset.ToString());
+            var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
+            return PixivBookmarkTagResult.Parse(resJson, this);
+        }
 
+        public async Task AddBookmark(string id, string restrict = "public", List<string> tags = null, bool requireAuth = true)
+        {
+            Uri url = new Uri(baseUrl + "/v2/illust/bookmark/add");
+            PixivRequestContent body = new PixivRequestContent
+            (
+                ("restrict", restrict),
+                ("illust_id", id)
+            );
+            body.Add("tags", tags);
+            await GetStringRequest(Method.POST, url, body: body, requireAuth: requireAuth).ConfigureAwait(false);
+        }
+
+        public async Task<bool> DeleteBookmark(string id, bool requireAuth = true)
+        {
+            try
+            {
+                Uri url = new Uri(baseUrl + "/v1/illust/bookmark/delete");
+                PixivRequestContent body = new PixivRequestContent
+                (
+                    ("illust_id", id)
+                );
+                await GetStringRequest(Method.POST, url, body: body, requireAuth: requireAuth).ConfigureAwait(false);
+                return true;
+            }
+            catch(PixivException ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<PixivResult<PixivUser>> GetUserFollowing(string id, string restrict = "public", int offset = -1, bool requireAuth = true)
+        {
+            Uri url = new Uri(baseUrl + "/v1/user/following");
+            PixivRequestContent query = new PixivRequestContent
+            (
+                ("restrict", restrict),
+                ("user_id", id)
+            );
+            if (offset >= 0) query.Add("offset", offset.ToString());
+            var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
+            return PixivResult<PixivUser>.Parse(resJson, "user_previews", this);
+        }
 
     }
 }

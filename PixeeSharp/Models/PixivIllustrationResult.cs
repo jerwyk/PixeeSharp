@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 
 namespace PixeeSharp.Models
 {
-    public class PixivIllustrationResult : PixivBaseModel
+    public class PixivIllustrationResult : PixivResult<PixivIllustration>
     {
         [JsonProperty("illusts")]
-        public List<PixivIllustration> Illustrations { get; set; }
-        public string NextUrl { get; set; }
+        public List<PixivIllustration> Illustrations { get; set; }       
         public int SearchSpanLimit { get; set; }
 
         public static PixivIllustrationResult Parse(string json, PixeeSharpBaseApi client = null)
