@@ -47,7 +47,7 @@ namespace PixeeSharp.Models
         public bool Pawoo { get; set; }
     }
 
-    public class PixivUserProfile
+    public class PixivUserProfile : PixivBaseModel
     {
 
         public PixivUser User { get; set; }
@@ -58,23 +58,8 @@ namespace PixeeSharp.Models
 
         public Dictionary<string, string> Workspace { get; set; }
 
-        public PixeeSharpBaseApi Client { get; set; }
-
-        public static PixivUserProfile GetUserProfileFromJson(string json, PixeeSharpBaseApi client = null)
-        {
-            var result = JsonConvert.DeserializeObject<PixivUserProfile>(json, new JsonSerializerSettings()
-            {
-                ContractResolver = new DefaultContractResolver()
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                }
-            });
-
-            result.Client = client;
-
-            return result;
-
-        }
+        public static PixivUserProfile Parse(string json, PixeeSharpBaseApi client = null)
+        => Parse<PixivUserProfile>(json, client);
 
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PixeeSharp.Models
 {
-    public class PixivUser
+    public class PixivUser : PixivBaseModel
     {
 
         public string Account { get; set; }

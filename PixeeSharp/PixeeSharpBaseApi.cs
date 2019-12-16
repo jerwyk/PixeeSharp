@@ -72,6 +72,19 @@ namespace PixeeSharp
             }
         }
 
+        public void Add(string key, IEnumerable<string> value, char seperator = ' ')
+        {
+            if(!(string.IsNullOrEmpty(key) || value == null || !value.Any()))
+            {
+                string valueString = "";
+                foreach(string str in value)
+                {
+                    valueString += str + seperator;
+                }
+                _content.Add(key, valueString.TrimEnd(seperator));
+            }
+        }
+
         /// <summary>
         /// Add the content to the client
         /// </summary>
@@ -204,7 +217,7 @@ namespace PixeeSharp
 
                 var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
                 _client.ExecuteAsync(_request, (response) => taskCompletionSource.SetResult(response));
-
+                //return _client.Execute(_request);
                 return await taskCompletionSource.Task.ConfigureAwait(false);
 
             }
@@ -213,7 +226,7 @@ namespace PixeeSharp
                 throw new PixivException("Request failed");
             }
 
-        }
+         }
 
         /// <summary>
         /// Excecute the request and returns the response string
@@ -224,7 +237,7 @@ namespace PixeeSharp
         /// <param name="Query">The request query parameters</param>
         /// <param name="Body">The request body content</param>
         /// <returns>The response content of the request as a string</returns>
-        internal async Task<string> GetStreamRequest(RestSharp.Method method, Uri url,
+        internal async Task<string> GetStringRequest(Method method, Uri url,
            PixivRequestHeader headers = null, PixivRequestContent query = null,
            PixivRequestContent body = null)
         {
@@ -249,9 +262,7 @@ namespace PixeeSharp
            PixivRequestContent body = null)
         {
             IRestResponse res = await RequestCall(method, url, headers, query, body).ConfigureAwait(false);
-            MemoryStream ms = new MemoryStream();
-            await ms.WriteAsync(res.RawBytes, 0, (int)res.ContentLength).ConfigureAwait(false);
-            return ms;
+            return new MemoryStream(res.RawBytes);
         }
 
         /// <summary>
@@ -291,7 +302,7 @@ namespace PixeeSharp
                 ("password", password)
             );
 
-            dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, Body: content).ConfigureAwait(false));
+            dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, body: content).ConfigureAwait(false));
             AccessToken = resContent.response.access_token;
             UserID = resContent.response.user.id;
             RefreshToken = resContent.response.refresh_token;
@@ -320,7 +331,7 @@ namespace PixeeSharp
                 ("refresh_token", refreshToken)
             );
 
-            dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, Body: content).ConfigureAwait(false));
+            dynamic resContent = JValue.Parse(await GetStringRequest(Method.POST, url, header, body: content).ConfigureAwait(false));
             AccessToken = resContent.response.access_token;
             UserID = resContent.response.user.id;
             this.RefreshToken = resContent.response.refresh_token;
@@ -331,7 +342,7 @@ namespace PixeeSharp
 
         }
 
-        public async Task<string> GetUriResult(Uri url)
+        public virtual async Task<string> GetUriResult(Uri url)
         {
             return await GetStringRequest(Method.GET, url).ConfigureAwait(false);
         }
@@ -351,10 +362,12 @@ namespace PixeeSharp
 
         }
 
-        public async Task<Stream> DownloadImage(string url)
-        {
-            return await DownloadImage(new Uri(url)).ConfigureAwait(false);
-        }
+        /// <summary>
+        /// Download the image as stream from the Pixiv image server
+        /// </summary>
+        /// <param name="url">The url of the image</param>
+        /// <returns>The image stream</returns>
+        public async Task<Stream> DownloadImage(string url) => await DownloadImage(new Uri(url)).ConfigureAwait(false);
 
     }
 }

@@ -8,3 +8,13 @@ C:\Users\12198\Desktop\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.csprojAssem
 C:\Users\12198\Desktop\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.csproj.CopyComplete
 C:\Users\12198\Desktop\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.dll
 C:\Users\12198\Desktop\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.pdb
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.dll
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.pdb
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.csprojAssemblyReference.cache
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\bin\Debug\PixeeSharp.dll
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\bin\Debug\PixeeSharp.pdb
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\bin\Debug\RestSharp.dll
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\bin\Debug\RestSharp.xml
+C:\Users\Yunkai\Desktop\YunKai\c#\PixeeSharp\PixeeSharp\obj\Debug\PixeeSharp.csproj.CopyComplete
