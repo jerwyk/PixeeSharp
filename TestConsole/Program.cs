@@ -19,12 +19,6 @@ namespace TestConsole
             
         }
 
-        class test
-        {
-            
-            public List<Tag> tags { get; set; }
-        }
-
         static async Task MainAsync()
         {
             PixeeSharpAppApi api = new PixeeSharpAppApi();

@@ -10,7 +10,7 @@ namespace PixeeSharp.Models
     /// <summary>
     /// Represents a illustration tag
     /// </summary>
-    public class Tag : IEquatable<Tag>
+    public class Tag : PixivBaseModel, IEquatable<Tag>
     {
         public string Name { get; set; }
         [JsonProperty("translated_name")]
@@ -49,18 +49,6 @@ namespace PixeeSharp.Models
     public class BookmarkTag : Tag
     {
         public int Count { get; set; }
-    }
-
-    public class PixivBookmarkTagResult : PixivBaseModel
-    {
-        public List<BookmarkTag> BookmarkTags { get; set; }
-        public string NextUrl { get; set; }
-
-        public static PixivBookmarkTagResult Parse(string json, PixeeSharpBaseApi client)
-        {
-            return Parse<PixivBookmarkTagResult>(json, client);
-        }
-
     }
 
 }
