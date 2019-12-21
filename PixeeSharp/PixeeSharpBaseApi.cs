@@ -217,7 +217,7 @@ namespace PixeeSharp
 
                 var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
                 _client.ExecuteAsync(_request, (response) => taskCompletionSource.SetResult(response));
-
+                //return _client.Execute(_request);
                 return await taskCompletionSource.Task.ConfigureAwait(false);
 
             }
@@ -226,7 +226,7 @@ namespace PixeeSharp
                 throw new PixivException("Request failed");
             }
 
-        }
+         }
 
         /// <summary>
         /// Excecute the request and returns the response string
@@ -237,7 +237,7 @@ namespace PixeeSharp
         /// <param name="Query">The request query parameters</param>
         /// <param name="Body">The request body content</param>
         /// <returns>The response content of the request as a string</returns>
-        internal async Task<string> GetStringRequest(RestSharp.Method method, Uri url,
+        internal async Task<string> GetStringRequest(Method method, Uri url,
            PixivRequestHeader headers = null, PixivRequestContent query = null,
            PixivRequestContent body = null)
         {
@@ -342,7 +342,7 @@ namespace PixeeSharp
 
         }
 
-        public async Task<string> GetUriResult(Uri url)
+        public virtual async Task<string> GetUriResult(Uri url)
         {
             return await GetStringRequest(Method.GET, url).ConfigureAwait(false);
         }

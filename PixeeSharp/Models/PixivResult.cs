@@ -9,15 +9,14 @@ namespace PixeeSharp.Models
     public class PixivResult<T> : PixivBaseModel where T : IPixivModel
     {
         public string NextUrl { get; set; }
-
         public List<T> Result { get; set; }
+        public int SearchSpanLimit { get; set; }
 
         private string ResultName;
 
-        public static PixivResult<T> Parse(string json, string resultName, PixeeSharpBaseApi client = null)
+        public static PixivResult<T> Parse(string json, string resultName = null, PixeeSharpBaseApi client = null)
         {
-            var result = Parse<PixivResult<T>>(json?.Replace(resultName, "result"), client);
-
+            var result = Parse<PixivResult<T>>(resultName == null ? json : json.Replace(resultName, "result"), client);
             if (client != null)
             {
                 foreach (var r in result.Result)
@@ -26,9 +25,7 @@ namespace PixeeSharp.Models
                 }
             }
             result.ResultName = resultName;
-
             return result;
-
         }
 
         /// <summary>
@@ -37,7 +34,7 @@ namespace PixeeSharp.Models
         /// <returns>The search result</returns>
         public async Task<PixivResult<T>> ReturnNextResult()
         {
-            return PixivResult<T>.Parse(await Client.GetUriResult(new Uri(NextUrl)).ConfigureAwait(false), "", this.Client);
+            return PixivResult<T>.Parse(await Client.GetUriResult(new Uri(NextUrl)).ConfigureAwait(false), ResultName, this.Client);
         }
 
         /// <summary>

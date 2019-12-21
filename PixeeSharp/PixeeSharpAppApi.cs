@@ -44,6 +44,11 @@ namespace PixeeSharp
 
         }
 
+        public override async Task<string> GetUriResult(Uri url)
+        {
+            return await GetStringRequest(Method.GET, url, requireAuth: true).ConfigureAwait(false);
+        }
+
         public async Task<PixivUserProfile> GetUserDetail(string userId, bool requireAuth = true)
         {
             Uri url = new Uri(baseUrl + "/v1/user/detail");
