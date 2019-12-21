@@ -16,7 +16,7 @@ namespace PixeeSharp.Models
 
         public static PixivResult<T> Parse(string json, string resultName, PixeeSharpBaseApi client = null)
         {
-            var result = Parse<PixivResult<T>>(json.Replace(resultName, "result"), client);
+            var result = Parse<PixivResult<T>>(json?.Replace(resultName, "result"), client);
 
             if (client != null)
             {

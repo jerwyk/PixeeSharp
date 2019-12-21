@@ -13,7 +13,7 @@ namespace PixeeSharp.Models
         public string Url { get; set; }
     }
 
-    public class PixivRecommentIllustrationResult : PixivIllustrationResult
+    public class PixivRecommentIllustrationResult : PixivResult<PixivIllustration>
     {
         public bool ContestExists { get; set; }
         public List<PixivIllustration> RankingIllustrations { get; set; }
@@ -21,14 +21,10 @@ namespace PixeeSharp.Models
 
         public static PixivRecommentIllustrationResult Parse(string json, PixeeSharpBaseApi client)
         {
-            var result = Parse<PixivRecommentIllustrationResult>(json, client);
+            var result = PixivResult<PixivIllustration>.Parse<PixivRecommentIllustrationResult>(json, client);
 
             if (client != null)
             {
-                foreach (var illust in result.Illustrations ?? Enumerable.Empty<PixivIllustration>())
-                {
-                    illust.Client = client;
-                }
                 foreach (var illust in result.RankingIllustrations ?? Enumerable.Empty<PixivIllustration>())
                 {
                     illust.Client = client;

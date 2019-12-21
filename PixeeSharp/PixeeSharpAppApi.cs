@@ -63,7 +63,7 @@ namespace PixeeSharp
             return PixivIllustration.Parse(resJson, this, true);
         }
 
-        public async Task<PixivIllustrationResult> SearchIllustration(string word, string searchTarget = "partial_match_for_tags",
+        public async Task<PixivResult<PixivIllustration>> SearchIllustration(string word, string searchTarget = "partial_match_for_tags",
             string sort = "date_desc", string duration = null, int offset = -1, bool requireAuth = true)
         {
             Uri url = new Uri(baseUrl + "/v1/search/illust");
@@ -77,10 +77,10 @@ namespace PixeeSharp
             query.Add("duration", duration);
             if (offset >= 0) query.Add("offset", offset.ToString());
             var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
-            return PixivIllustrationResult.Parse(resJson, this);
+            return PixivResult<PixivIllustration>.Parse(resJson, "illusts",this);
         }
 
-        public async Task<PixivIllustrationResult> GetIllustrationRanking(string mode = "day", DateTime? date = null, int offset = -1, bool requireAuth = true)
+        public async Task<PixivResult<PixivIllustration>> GetIllustrationRanking(string mode = "day", DateTime? date = null, int offset = -1, bool requireAuth = true)
         {
             Uri url = new Uri(baseUrl + "/v1/illust/ranking");
             PixivRequestContent query = new PixivRequestContent
@@ -91,7 +91,7 @@ namespace PixeeSharp
             query.Add("date", date?.ToString("yyyy-MM-dd"));
             if (offset >= 0) query.Add("offset", offset.ToString());
             var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
-            return PixivIllustrationResult.Parse(resJson, this);
+            return PixivResult<PixivIllustration>.Parse(resJson, "illusts", this);
         }
 
         public async Task<PixivTrendingTags> GetTrendingTags(bool requireAuth = true)
@@ -101,7 +101,7 @@ namespace PixeeSharp
             return PixivTrendingTags.Parse(resJson, this);
         }
 
-        public async Task<PixivIllustrationResult> GetUserIllustrations(string id, string type = "illust", int offset = -1, bool requireAuth = true)
+        public async Task<PixivResult<PixivIllustration>> GetUserIllustrations(string id, string type = "illust", int offset = -1, bool requireAuth = true)
         {
             Uri url = new Uri(baseUrl + "/v1/user/illusts");
             PixivRequestContent query = new PixivRequestContent
@@ -112,10 +112,10 @@ namespace PixeeSharp
             query.Add("type", type);
             if (offset >= 0) query.Add("offset", offset.ToString());
             var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
-            return PixivIllustrationResult.Parse(resJson, this);
+            return PixivResult<PixivIllustration>.Parse(resJson, "illusts", this);
         }
 
-        public async Task<PixivIllustrationResult> GetUserBookmarksIllust(string id, string restrict = "public", string maxBookmarkId = null, string tag = null, bool requireAuth = true)
+        public async Task<PixivResult<PixivIllustration>> GetUserBookmarksIllust(string id, string restrict = "public", string maxBookmarkId = null, string tag = null, bool requireAuth = true)
         {
             Uri url = new Uri(baseUrl + "/v1/user/bookmarks/illust");
             PixivRequestContent query = new PixivRequestContent
@@ -127,16 +127,16 @@ namespace PixeeSharp
             query.Add("max_bookmark_id", maxBookmarkId);
             query.Add("tag", tag);
             var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
-            return PixivIllustrationResult.Parse(resJson, this);
+            return PixivResult<PixivIllustration>.Parse(resJson, "illusts", this);
         }
 
-        public async Task<PixivIllustrationResult> GetFollowIllutration(string restrict = "public", int offset = -1, bool requireAuth = true)
+        public async Task<PixivResult<PixivIllustration>> GetFollowIllutration(string restrict = "public", int offset = -1, bool requireAuth = true)
         {
             Uri url = new Uri(baseUrl + "/v2/illust/follow");
             PixivRequestContent query = new PixivRequestContent(("restrict", restrict));
             if (offset >= 0) query.Add("offset", offset.ToString());
             var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
-            return PixivIllustrationResult.Parse(resJson, this);
+            return PixivResult<PixivIllustration>.Parse(resJson, "illusts", this);
         }
         //TODO
         public async Task<string> GetIllustrationBookmarkDetail(string illustId, bool requireAuth = true)
@@ -173,6 +173,22 @@ namespace PixeeSharp
             }
             string resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
             return PixivRecommentIllustrationResult.Parse(resJson, this);
+        }
+
+        public async Task<PixivResult<PixivIllustration>> GetRelatedIllustration(string id, List<string> seedIllustIds = null, bool requireAuth = true)
+        {
+            Uri url = new Uri(baseUrl + "/v2/illust/related");
+            PixivRequestContent query = new PixivRequestContent
+            (
+                ("illust_id", id),
+                ("filter", Filter)
+            );
+            foreach (var seed in seedIllustIds ?? Enumerable.Empty<string>())
+            {
+                query.Add("seed_illust_ids[]", seed);
+            }
+            string resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
+            return PixivResult<PixivIllustration>.Parse(resJson, "illusts", this);
         }
 
         public async Task<PixivBookmarkTagResult> GetUserBookmarkTagsIllust(string id, string restrict = "public", int offset = -1, bool requireAuth = true)
@@ -218,7 +234,7 @@ namespace PixeeSharp
             }
         }
 
-        public async Task<PixivResult<PixivUser>> GetUserFollowing(string id, string restrict = "public", int offset = -1, bool requireAuth = true)
+        public async Task<PixivResult<PixivUserPreview>> GetUserFollowing(string id, string restrict = "public", int offset = -1, bool requireAuth = true)
         {
             Uri url = new Uri(baseUrl + "/v1/user/following");
             PixivRequestContent query = new PixivRequestContent
@@ -228,7 +244,33 @@ namespace PixeeSharp
             );
             if (offset >= 0) query.Add("offset", offset.ToString());
             var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
-            return PixivResult<PixivUser>.Parse(resJson, "user_previews", this);
+            return PixivResult<PixivUserPreview>.Parse(resJson, "user_previews", this);
+        }
+
+        public async Task<PixivResult<PixivUserPreview>> GetUserFollower(string id, string restrict = "public", int offset = -1, bool requireAuth = true)
+        {
+            Uri url = new Uri(baseUrl + "/v1/user/follower");
+            PixivRequestContent query = new PixivRequestContent
+            (
+                ("restrict", restrict),
+                ("user_id", id)
+            );
+            if (offset >= 0) query.Add("offset", offset.ToString());
+            var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
+            return PixivResult<PixivUserPreview>.Parse(resJson, "user_previews", this);
+        }
+
+        public async Task<PixivResult<PixivUserPreview>> GetUserMyPixiv(string id, string restrict = "public", int offset = -1, bool requireAuth = true)
+        {
+            Uri url = new Uri(baseUrl + "/v1/user/mypixiv");
+            PixivRequestContent query = new PixivRequestContent
+            (
+                ("restrict", restrict),
+                ("user_id", id)
+            );
+            if (offset >= 0) query.Add("offset", offset.ToString());
+            var resJson = await GetStringRequest(Method.GET, url, query: query, requireAuth: requireAuth).ConfigureAwait(false);
+            return PixivResult<PixivUserPreview>.Parse(resJson, "user_previews", this);
         }
 
     }

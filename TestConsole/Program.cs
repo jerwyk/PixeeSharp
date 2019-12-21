@@ -30,8 +30,8 @@ namespace TestConsole
             PixeeSharpAppApi api = new PixeeSharpAppApi();
             await api.Login("jerwyk@126.com", "Jerwyk0526");
 
-            //var a = await api.GetIllustrationDetail("72158936");
-            await api.GetUserFollowing("10632654");
+            var a = await api.GetRelatedIllustration("72158936");
+            //var a = await api.GetUserFollowing("10632654");
             //await a.Illustrations[0].GetImage();
         }
 

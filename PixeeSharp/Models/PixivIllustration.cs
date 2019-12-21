@@ -70,7 +70,7 @@ namespace PixeeSharp.Models
     /// <summary>
     /// This wrapper class is need for the GetIllustration method
     /// </summary>
-    internal class PixivIllustrationWrapper : PixivBaseModel
+    internal class PixivMetaPage : PixivBaseModel
     {
         [JsonProperty("illust")]
         public PixivIllustration PixivIllustration { get; set; }
@@ -118,7 +118,7 @@ namespace PixeeSharp.Models
             }
             else
             {
-                return Parse<PixivIllustrationWrapper>(json, client).PixivIllustration;
+                return Parse<PixivMetaPage>(json, client).PixivIllustration;
             }
         }
 
