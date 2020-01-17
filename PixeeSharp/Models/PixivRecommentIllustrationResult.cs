@@ -21,7 +21,7 @@ namespace PixeeSharp.Models
 
         public static PixivRecommentIllustrationResult Parse(string json, PixeeSharpBaseApi client)
         {
-            var result = Parse(json, "illusts", client);
+            var result = Parse<PixivRecommentIllustrationResult>(json, client);
 
             if (client != null)
             {

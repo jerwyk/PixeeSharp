@@ -27,13 +27,21 @@ namespace TestConsole
 
         static async Task MainAsync()
         {
-            PixeeSharpAppApi api = new PixeeSharpAppApi();
-            await api.Login("jerwyk@126.com", "Jerwyk0526");
+            try
+            {
+                PixeeSharpAppApi api = new PixeeSharpAppApi();
+                await api.Login("user_wmxv8884", "Rkd4BeQD4Ynr76u");
 
-            var a = await api.SearchIllustration("東方Project10000users入り 博麗霊夢");
-            await a.SearchAll();
-            //await api.GetUserFollowing("10632654");
-            //await a.Illustrations[0].GetImage();
+                var a = await api.GetIllustrationDetail("76194604");
+                var test = await a.GetImage(PixeeSharp.Enums.ImageSize.Large);
+                //await a.SearchAll();
+                //await api.GetUserFollowing("10632654");
+                //await a.Illustrations[0].GetImage();
+            }
+            catch(Exception ex)
+            {
+
+            }
         }
 
     }
