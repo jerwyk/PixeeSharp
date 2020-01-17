@@ -8,13 +8,10 @@ using System.Threading.Tasks;
 namespace PixeeSharp.Models
 {
 
-    public class TrendingTag
+    public class TrendingTag : Tag
     {
         [JsonProperty("illust")]
         public PixivIllustration Illustration { get; set; }
-        public string Tag { get; set; }
-        [JsonProperty("translated_name")]
-        public string TranslatedName { get; set; }
     }
 
     public class PixivTrendingTags : PixivBaseModel

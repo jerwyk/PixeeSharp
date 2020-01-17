@@ -59,14 +59,13 @@
     <Compile Include="Enums\Enums.cs" />
     <Compile Include="Models\PixivBaseModel.cs" />
     <Compile Include="Models\PixivIllustration.cs" />
-    <Compile Include="Models\PixivIllustrationResult.cs" />
     <Compile Include="Models\PixivRecommentIllustrationResult.cs" />
     <Compile Include="Models\PixivResult.cs" />
     <Compile Include="Models\PixivTag.cs" />
     <Compile Include="Models\PixivTrendingTags.cs" />
     <Compile Include="Models\PixivUser.cs" />
+    <Compile Include="Models\PixivUserPreview.cs" />
     <Compile Include="Models\PixivUserProfile.cs" />
-    <Compile Include="Models\PixivUserResult.cs" />
     <Compile Include="PixeeSharpAppApi.cs" />
     <Compile Include="PixeeSharpBaseApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

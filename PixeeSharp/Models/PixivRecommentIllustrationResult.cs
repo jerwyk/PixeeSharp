@@ -25,10 +25,6 @@ namespace PixeeSharp.Models
 
             if (client != null)
             {
-                foreach (var illust in result.Result ?? Enumerable.Empty<PixivIllustration>())
-                {
-                    illust.Client = client;
-                }
                 foreach (var illust in result.RankingIllustrations ?? Enumerable.Empty<PixivIllustration>())
                 {
                     illust.Client = client;
