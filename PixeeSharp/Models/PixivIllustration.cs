@@ -118,7 +118,7 @@ namespace PixeeSharp.Models
             }
             else
             {
-                return Parse<PixivIllustrationWrapper>(json, client).PixivIllustration;
+                return Parse<PixivIllustrationWrapper>(json, client).PixivIllustration{ client = client};
             }
         }
 
