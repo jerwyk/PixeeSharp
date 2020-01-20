@@ -110,12 +110,19 @@ namespace PixeeSharp
     [Serializable]
     public class PixivException : Exception
     {
-        public PixivException() { }
-        public PixivException(string msg) : base(msg) { }
 
-        public PixivException(string message, Exception innerException) : base(message, innerException)
+        public PixivException() { }
+        public PixivException(string msg) : base(ParseError(msg)) { }
+
+        public PixivException(string msg, Exception innerException) : base(ParseError(msg), innerException) { }
+
+        private static string ParseError(string jsonMsg)    
         {
+            dynamic error = JObject.Parse(jsonMsg);
+            string msg = !string.IsNullOrEmpty((string)error.error.message) ? error.error.message : error.error.user_message;
+            return msg;
         }
+
     }
 
     public class RefreshEventArgs : EventArgs
@@ -244,7 +251,7 @@ namespace PixeeSharp
             IRestResponse res = await RequestCall(method, url, headers, query, body).ConfigureAwait(false);
             var status = res.StatusCode;
             if (!(status == HttpStatusCode.OK || status == HttpStatusCode.Moved || status == HttpStatusCode.Found))
-                throw new PixivException("[ERROR] RequestCall() failed!");
+                throw new PixivException(res.Content);
             return res.Content;
         }
 

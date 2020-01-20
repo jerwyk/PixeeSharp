@@ -18,14 +18,11 @@ namespace PixeeSharp.Models
     {
         public PixeeSharpBaseApi Client { get ; set; }
 
-        public static T Parse<T>(string json, PixeeSharpBaseApi client) where T : IPixivModel
+        public static T Parse<T>(string json, PixeeSharpBaseApi client, IContractResolver contractResolver = null) where T : IPixivModel
         {
             var res = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings()
             {
-                ContractResolver = new DefaultContractResolver()
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                }
+                ContractResolver = contractResolver ?? new PixivContractResolver()
             });
             res.Client = client;
             return res;

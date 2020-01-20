@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace PixeeSharp.Models
 
         public static PixivResult<T> Parse(string json, string resultName = null, PixeeSharpBaseApi client = null)
         {
-            var result = Parse<PixivResult<T>>(resultName == null ? json : json.Replace(resultName, "result"), client);
+            var result = Parse<PixivResult<T>>(json, client, new PixivContractResolver(resultName));
             if (client != null)
             {
                 foreach (var r in result.Result)
@@ -34,7 +35,14 @@ namespace PixeeSharp.Models
         /// <returns>The search result</returns>
         public async Task<PixivResult<T>> ReturnNextResult()
         {
-            return PixivResult<T>.Parse(await Client.GetUriResult(new Uri(NextUrl)).ConfigureAwait(false), ResultName, this.Client);
+            if (!string.IsNullOrEmpty(NextUrl))
+            {
+                return PixivResult<T>.Parse(await Client.GetUriResult(new Uri(NextUrl)).ConfigureAwait(false), ResultName, this.Client);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -44,9 +52,16 @@ namespace PixeeSharp.Models
         public async Task<bool> GetNextResult()
         {
             var nextResult = await ReturnNextResult().ConfigureAwait(false);
-            this.Result = nextResult.Result;
-            this.NextUrl = nextResult.NextUrl;
-            return NextUrl != null;
+            if (nextResult != null)
+            {
+                this.Result = nextResult.Result;
+                this.NextUrl = nextResult.NextUrl;
+                return NextUrl != null;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -56,10 +71,17 @@ namespace PixeeSharp.Models
         public async Task<bool> AppendNextResult()
         {
             var nextResult = await ReturnNextResult().ConfigureAwait(false);
-            this.Result.AddRange(nextResult.Result);
-            this.NextUrl = nextResult.NextUrl;
- 
-            return NextUrl != null;
+            if (nextResult != null)
+            {
+                this.Result.AddRange(nextResult.Result);
+                this.NextUrl = nextResult.NextUrl;
+
+                return NextUrl != null;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
