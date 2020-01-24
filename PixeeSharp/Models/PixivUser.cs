@@ -12,7 +12,7 @@ namespace PixeeSharp.Models
         public string Account { get; set; }
         public long ID { get; set; }
         public string Name { get; set; }
-        public List<ImageSizeUrl> ProfileImageUrl { get; set; }
+        public ImageSizeUrl ProfileImageUrls { get; set; }
         public bool IsMailAuthorized { get; set; }
 
     }
