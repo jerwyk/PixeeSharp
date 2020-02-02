@@ -26,8 +26,8 @@ namespace TestConsole
                 PixeeSharpAppApi api = new PixeeSharpAppApi();
                 await api.Login("user_wmxv8884", "Rkd4BeQD4Ynr76u");
 
-                var a = await api.GetIllustrationDetail("76194604");
-                var test = await a.GetImage(PixeeSharp.Enums.ImageSize.Large);
+                var a = await api.GetTrendingTags();
+                //await a.SearchAll();
                 //await a.SearchAll();
                 //await api.GetUserFollowing("10632654");
                 //await a.Illustrations[0].GetImage();

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>PixeeSharp</id>
+    <version>1.0.4</version>
+    <title>PixeeSharp</title>
+    <authors>jerwyk</authors>
+    <owners>jerwyk</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/jerwyk/PixeeSharp</projectUrl>
+    <description>A Api that fetches images from Pixiv</description>
+    <releaseNotes>Fixed issue with user profile image url being null</releaseNotes>
+    <copyright>Copyright 2020</copyright>
+    <tags>C# API .NET Pixiv</tags>
+  </metadata>
+</package>

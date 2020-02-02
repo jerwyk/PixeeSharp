@@ -21,9 +21,12 @@ namespace PixeeSharp.Models
 
         public static PixivTrendingTags Parse(string json, PixeeSharpBaseApi client = null)
         {
-            var res = Parse<PixivTrendingTags>(json, client);
+            Dictionary<string, string> map = new Dictionary<string, string> { { "Name", "tag" } };
+            PixivContractResolver resolver = new PixivContractResolver(map);
+            var res = Parse<PixivTrendingTags>(json, client, resolver);
             foreach(var t in res.TrendingTags)
             {
+                t.Client = client;
                 t.Illustration.Client = client;
             }
             return res;

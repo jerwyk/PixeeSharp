@@ -19,6 +19,11 @@ namespace PixeeSharp.Models
             };            
         }
 
+        public PixivContractResolver(Dictionary<string, string> mapping)
+        {
+            PropertyMappings = mapping;
+        }
+
         public PixivContractResolver()
         {
             PropertyMappings = new Dictionary<string, string>();
