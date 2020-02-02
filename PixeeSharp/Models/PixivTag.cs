@@ -28,6 +28,11 @@ namespace PixeeSharp.Models
             }
         }
 
+        public override string ToString()
+        {
+            return TranslatedName ?? Name;
+        }
+
         public override int GetHashCode() => base.GetHashCode();
 
         public static bool operator ==(Tag left, Tag right)
